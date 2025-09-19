@@ -176,6 +176,159 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
 
 ## 🚀 Deployment
 
+### Coolify (Self-Hosted)
+
+Coolify is a self-hosted alternative to Vercel/Netlify that you can deploy on your own server. Here's how to deploy AssetTrackr with Coolify:
+
+#### Prerequisites
+- A server with Docker installed
+- Coolify instance running (see [Coolify Installation Guide](https://coolify.io/docs/installation))
+- Your repository hosted on GitHub, GitLab, or Bitbucket
+
+#### Deployment Steps
+
+1. **Create New Project in Coolify**
+   - Log into your Coolify dashboard
+   - Click "New Project" or "Add Resource"
+   - Select "Git Repository" as source
+
+2. **Connect Repository**
+   - Enter your repository URL: `https://github.com/yourusername/AssetManagerGameDev`
+   - Select the branch you want to deploy (usually `main` or `master`)
+   - Choose "Next.js" as the application type
+
+3. **Configure Build Settings**
+   ```
+   Build Pack: Next.js
+   Build Command: pnpm build
+   Start Command: pnpm start
+   Node Version: 18.x (or latest LTS)
+   ```
+
+4. **Set Environment Variables**
+   In the Coolify environment variables section, add:
+   ```env
+   NODE_ENV=production
+   NEXT_PUBLIC_API_URL=https://your-backend-domain.com/api
+   PORT=3000
+   ```
+
+5. **Configure Build Context**
+   - **Root Directory**: `asset-management-game-dev-FE`
+   - **Dockerfile**: (Leave empty to use Coolify's auto-detection)
+   - **Build Context**: `asset-management-game-dev-FE`
+
+6. **Advanced Configuration (Optional)**
+   If you need custom Docker configuration, create a `Dockerfile` in the frontend directory:
+   ```dockerfile
+   FROM node:18-alpine AS base
+   
+   # Install dependencies only when needed
+   FROM base AS deps
+   RUN apk add --no-cache libc6-compat
+   WORKDIR /app
+   
+   # Install dependencies based on the preferred package manager
+   COPY package.json pnpm-lock.yaml* ./
+   RUN corepack enable pnpm && pnpm i --frozen-lockfile
+   
+   # Rebuild the source code only when needed
+   FROM base AS builder
+   WORKDIR /app
+   COPY --from=deps /app/node_modules ./node_modules
+   COPY . .
+   
+   # Next.js collects completely anonymous telemetry data about general usage.
+   ENV NEXT_TELEMETRY_DISABLED 1
+   
+   RUN corepack enable pnpm && pnpm build
+   
+   # Production image, copy all the files and run next
+   FROM base AS runner
+   WORKDIR /app
+   
+   ENV NODE_ENV production
+   ENV NEXT_TELEMETRY_DISABLED 1
+   
+   RUN addgroup --system --gid 1001 nodejs
+   RUN adduser --system --uid 1001 nextjs
+   
+   COPY --from=builder /app/public ./public
+   
+   # Set the correct permission for prerender cache
+   RUN mkdir .next
+   RUN chown nextjs:nodejs .next
+   
+   # Automatically leverage output traces to reduce image size
+   COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+   COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+   
+   USER nextjs
+   
+   EXPOSE 3000
+   
+   ENV PORT 3000
+   ENV HOSTNAME "0.0.0.0"
+   
+   CMD ["node", "server.js"]
+   ```
+
+7. **Deploy**
+   - Click "Deploy" in Coolify
+   - Monitor the build logs for any issues
+   - Once deployed, your app will be available at the provided URL
+
+#### Custom Domain Setup
+1. In Coolify, go to your project settings
+2. Navigate to "Domains" section
+3. Add your custom domain (e.g., `assettrackr.yourdomain.com`)
+4. Configure DNS records as instructed by Coolify
+5. Enable SSL certificate (Coolify handles this automatically with Let's Encrypt)
+
+#### Environment-Specific Configuration
+
+**Development Environment:**
+```env
+NODE_ENV=development
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+```
+
+**Production Environment:**
+```env
+NODE_ENV=production
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com/api
+```
+
+#### Monitoring & Logs
+- **Build Logs**: Available in Coolify dashboard during deployment
+- **Runtime Logs**: Accessible in the "Logs" tab of your project
+- **Health Checks**: Coolify automatically monitors your application health
+
+#### Troubleshooting Coolify Deployment
+
+**Common Issues:**
+
+1. **Build Fails with "pnpm not found"**
+   - Ensure Node.js version is 18+ in Coolify settings
+   - Add `corepack enable pnpm` to build command
+
+2. **Port Issues**
+   - Make sure your app listens on `0.0.0.0:3000`
+   - Check that `PORT` environment variable is set
+
+3. **Memory Issues**
+   - Increase memory limit in Coolify project settings
+   - Consider using `--max-old-space-size=4096` in build command
+
+4. **Static File Issues**
+   - Ensure `next.config.mjs` has `images: { unoptimized: true }` for static hosting
+   - Check that all static assets are in the `public` directory
+
+#### Scaling with Coolify
+- **Horizontal Scaling**: Use Coolify's scaling features to run multiple instances
+- **Load Balancing**: Coolify automatically handles load balancing
+- **Resource Limits**: Set CPU and memory limits in project settings
+
 ### Vercel (Recommended)
 1. Connect your GitHub repository to Vercel
 2. Set environment variables in Vercel dashboard
