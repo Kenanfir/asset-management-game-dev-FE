@@ -17,9 +17,11 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { EnumBadge } from "@/components/ui/enum-badge"
 import { StatusChip } from "@/components/ui/status-chip"
-import { ExternalLink, Shield, AlertTriangle, Upload, X } from "lucide-react"
+import { ExternalLink, Shield, AlertTriangle, Upload, X, Edit2, Save } from "lucide-react"
 import { useState } from "react"
 import { getRulePackForAssetType } from "@/lib/rule-packs"
 import { useRequestAssetUpdate } from "@/lib/hooks/use-assets"
@@ -45,6 +47,8 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false)
   const [selectedReasons, setSelectedReasons] = useState<string[]>([])
   const [updateNotes, setUpdateNotes] = useState("")
+  const [isEditingRules, setIsEditingRules] = useState(false)
+  const [editedRules, setEditedRules] = useState(asset.rules || {})
 
   const rulePack = getRulePackForAssetType(asset.type)
   const currentFindings = asset.history.find((h) => h.version === asset.current.version)?.findings || []
@@ -66,6 +70,21 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
     } catch (error) {
       console.error("Failed to mark asset for update:", error)
     }
+  }
+
+  const handleSaveRules = async () => {
+    try {
+      // In a real app, this would call an API to update the asset rules
+      console.log('Saving rules:', editedRules)
+      setIsEditingRules(false)
+    } catch (error) {
+      console.error("Failed to save rules:", error)
+    }
+  }
+
+  const handleCancelRules = () => {
+    setEditedRules(asset.rules || {})
+    setIsEditingRules(false)
   }
 
   const getSeverityColor = (severity: string) => {
@@ -103,6 +122,9 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
             <DrawerDescription className="mt-1">{asset.description}</DrawerDescription>
             <div className="flex items-center gap-2 mt-2">
               <EnumBadge type={asset.type} />
+              <Badge variant="outline" className="text-xs">
+                .{asset.file_type}
+              </Badge>
               <StatusChip status={asset.status} />
             </div>
           </div>
@@ -131,6 +153,12 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
                   <div>
                     <span className="text-muted-foreground">Base Path:</span>
                     <p className="font-mono">{asset.base_path}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">File Type:</span>
+                    <Badge variant="outline" className="text-xs">
+                      .{asset.file_type}
+                    </Badge>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Versioning:</span>
@@ -247,11 +275,32 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
           <TabsContent value="rules" className="space-y-4">
             <Card className="rounded-xl border-border/50 bg-card/50">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Rule Pack: {asset.type}
-                </CardTitle>
-                <CardDescription>Validation rules applied to this asset type</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Shield className="h-5 w-5" />
+                      Asset Rules
+                    </CardTitle>
+                    <CardDescription>Validation rules for this specific asset</CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingRules(!isEditingRules)}
+                  >
+                    {isEditingRules ? (
+                      <>
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </>
+                    ) : (
+                      <>
+                        <Edit2 className="h-4 w-4 mr-2" />
+                        Edit Rules
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -265,16 +314,57 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
                   </div>
                 </div>
 
-                {rulePack?.rules && (
+                {isEditingRules ? (
                   <div>
-                    <h4 className="text-sm font-medium mb-2">Rules</h4>
-                    <div className="space-y-2">
-                      {Object.entries(rulePack.rules).map(([key, value]) => (
-                        <div key={key} className="flex justify-between text-sm">
-                          <span className="text-muted-foreground capitalize">{key.replace(/_/g, " ")}:</span>
-                          <span className="font-mono">{Array.isArray(value) ? value.join(", ") : String(value)}</span>
+                    <h4 className="text-sm font-medium mb-3">Edit Rules</h4>
+                    <div className="space-y-3">
+                      {Object.entries(editedRules).map(([key, value]) => (
+                        <div key={key} className="flex items-center gap-3">
+                          <Label htmlFor={`rule-${key}`} className="w-32 text-sm font-medium capitalize">
+                            {key.replace(/_/g, ' ')}:
+                          </Label>
+                          <Input
+                            id={`rule-${key}`}
+                            type={typeof value === 'number' ? 'number' : 'text'}
+                            value={value}
+                            onChange={(e) => {
+                              const newValue = typeof value === 'number'
+                                ? Number(e.target.value)
+                                : e.target.value
+                              setEditedRules(prev => ({
+                                ...prev,
+                                [key]: newValue
+                              }))
+                            }}
+                            className="flex-1"
+                          />
                         </div>
                       ))}
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button onClick={handleSaveRules} size="sm">
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Rules
+                      </Button>
+                      <Button onClick={handleCancelRules} variant="outline" size="sm">
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Current Rules</h4>
+                    <div className="space-y-2">
+                      {Object.keys(editedRules).length > 0 ? (
+                        Object.entries(editedRules).map(([key, value]) => (
+                          <div key={key} className="flex justify-between text-sm">
+                            <span className="text-muted-foreground capitalize">{key.replace(/_/g, " ")}:</span>
+                            <span className="font-mono">{Array.isArray(value) ? value.join(", ") : String(value)}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-muted-foreground text-sm">No custom rules set. Using default rules from rule pack.</p>
+                      )}
                     </div>
                   </div>
                 )}

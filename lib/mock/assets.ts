@@ -24,6 +24,7 @@ export const mockAssets: Asset[] = [
     id: "1",
     key: "hero_sprite",
     type: "sprite_static",
+    file_type: "png",
     base_path: "assets/sprites/hero",
     versioning: "folder",
     current: {
@@ -51,6 +52,7 @@ export const mockAssets: Asset[] = [
     id: "2",
     key: "background_music",
     type: "audio_music",
+    file_type: "wav",
     base_path: "assets/audio/music",
     versioning: "filename",
     current: {
@@ -71,6 +73,7 @@ export const mockAssets: Asset[] = [
     id: "3",
     key: "ground_texture",
     type: "texture",
+    file_type: "png",
     base_path: "assets/textures",
     versioning: "folder",
     current: {
@@ -93,6 +96,7 @@ export const mockAssets: Asset[] = [
     id: "4",
     key: "enemy_model",
     type: "model_3d",
+    file_type: "fbx",
     base_path: "assets/models/enemies",
     versioning: "folder",
     current: {
@@ -114,6 +118,7 @@ export const mockAssets: Asset[] = [
     id: "5",
     key: "jump_sound",
     type: "audio_sfx",
+    file_type: "wav",
     base_path: "assets/audio/sfx",
     versioning: "filename",
     current: {
@@ -139,6 +144,7 @@ export const mockAssets: Asset[] = [
     id: "6",
     key: "coin_animation",
     type: "sprite_animation",
+    file_type: "png",
     base_path: "assets/sprites/items",
     versioning: "folder",
     current: {

@@ -7,7 +7,7 @@ export type AssetType =
   | "model_3d"
   | "animation_3d"
 
-export type Status = "needed" | "in_progress" | "review" | "done" | "needs_update"
+export type Status = "needed" | "in_progress" | "review" | "done" | "needs_update" | "canceled"
 
 export type Versioning = "folder" | "filename"
 
@@ -33,6 +33,7 @@ export interface Asset {
   id: string
   key: string
   type: AssetType
+  file_type: string
   base_path: string
   versioning: Versioning
   current: {
@@ -53,6 +54,13 @@ export interface Project {
   last_sync: string
   default_branch: string
   description?: string
+  settings?: ProjectSettings
+}
+
+export interface ProjectSettings {
+  default_rules: Record<AssetType, Record<string, any>>
+  auto_assign?: boolean
+  validation_strict?: boolean
 }
 
 export interface User {

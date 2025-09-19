@@ -53,47 +53,45 @@ export default function ProjectPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold mb-2">{project.name}</h1>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <ExternalLink className="h-3 w-3" />
-              <a
-                href={project.repo_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground transition-colors"
-              >
-                {project.repo_url.replace("https://github.com/", "")}
-              </a>
-            </div>
-            <div className="flex items-center gap-1">
-              <GitBranch className="h-3 w-3" />
-              <Badge variant="outline" className="text-xs">
-                {project.default_branch}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              <span>Last sync: {formatDate(project.last_sync)}</span>
-            </div>
+    <div className="p-6">
+      {/* Project Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">{project.name}</h1>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <ExternalLink className="h-3 w-3" />
+            <a
+              href={project.repo_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors"
+            >
+              {project.repo_url.replace("https://github.com/", "")}
+            </a>
+          </div>
+          <div className="flex items-center gap-1">
+            <GitBranch className="h-3 w-3" />
+            <Badge variant="outline" className="text-xs">
+              {project.default_branch}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            <span>Last sync: {formatDate(project.last_sync)}</span>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="assets" className="space-y-6">
+      <Tabs defaultValue="assets" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="assets">Assets</TabsTrigger>
           <TabsTrigger value="uploads">Uploads</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
-          <Card className="rounded-2xl border-border/50 bg-card/50 backdrop-blur-sm">
+        <TabsContent value="overview" className="space-y-4">
+          <Card className="rounded-xl border border-border/50 bg-card/50">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Activity className="h-5 w-5 text-primary" />
@@ -102,7 +100,7 @@ export default function ProjectPage() {
               <CardDescription>Latest asset management activities</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                   <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
                   <div className="flex-1">

@@ -3,10 +3,11 @@ import { getProject } from '@/lib/mock/projects'
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const project = await getProject(params.id)
+        const { id } = await params
+        const project = await getProject(id)
 
         if (!project) {
             return NextResponse.json(

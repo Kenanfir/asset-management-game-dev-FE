@@ -4,8 +4,7 @@ import { Inter } from "next/font/google"
 import { Press_Start_2P } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { queryClient } from "@/lib/query-client"
+import { Providers } from "@/components/providers"
 import "./globals.css"
 
 const inter = Inter({
@@ -33,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`font-sans ${inter.variable} ${pressStart2P.variable} antialiased`}>
-        <QueryClientProvider client={queryClient}>
+        <Providers>
           <Suspense fallback={<div>Loading...</div>}>
             <div className="min-h-screen bg-background relative">
               <div className="fixed inset-0 opacity-20 pointer-events-none">
@@ -43,7 +42,7 @@ export default function RootLayout({
             </div>
           </Suspense>
           <Analytics />
-        </QueryClientProvider>
+        </Providers>
       </body>
     </html>
   )

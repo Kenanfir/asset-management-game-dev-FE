@@ -13,10 +13,11 @@ import { useAssets } from "@/lib/hooks/use-assets"
 import { useUIStore } from "@/lib/store"
 import { getUserById } from "@/lib/mock/users"
 import { getExpectedFormats } from "@/lib/rule-packs"
-import type { Asset } from "@/lib/types"
+import type { Asset, Status } from "@/lib/types"
 import { AssetDrawer } from "./asset-drawer"
 import { FileUpload } from "./file-upload"
 import { BulkOperations } from "./bulk-operations"
+import { InlineEdit, InlineStatusEdit } from "./inline-edit"
 
 interface AssetTableProps {
   projectId: string
@@ -47,6 +48,12 @@ export function AssetTable({ projectId }: AssetTableProps) {
     setDrawerOpen(true)
   }
 
+  const handleAssetUpdate = async (assetId: string, updates: Partial<Asset>) => {
+    // In a real app, this would call an API to update the asset
+    console.log('Updating asset:', assetId, updates)
+    // For now, we'll just log the update
+  }
+
   const formatVersion = (version: string) => {
     return version.startsWith("v") ? version : `v${version}`
   }
@@ -73,33 +80,34 @@ export function AssetTable({ projectId }: AssetTableProps) {
 
         <div className="flex gap-2">
           <Select
-            value={statusFilter[0] || ""}
-            onValueChange={(value) => setStatusFilter(value ? [value] : [])}
+            value={statusFilter[0] || "all"}
+            onValueChange={(value) => setStatusFilter(value === "all" ? [] : [value])}
           >
             <SelectTrigger className="w-32">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Status</SelectItem>
+              <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="needed">Needed</SelectItem>
               <SelectItem value="in_progress">In Progress</SelectItem>
               <SelectItem value="review">Review</SelectItem>
               <SelectItem value="done">Done</SelectItem>
               <SelectItem value="needs_update">Needs Update</SelectItem>
+              <SelectItem value="canceled">Canceled</SelectItem>
             </SelectContent>
           </Select>
 
           <Select
-            value={typeFilter[0] || ""}
-            onValueChange={(value) => setTypeFilter(value ? [value] : [])}
+            value={typeFilter[0] || "all"}
+            onValueChange={(value) => setTypeFilter(value === "all" ? [] : [value])}
           >
             <SelectTrigger className="w-32">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Types</SelectItem>
+              <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="sprite_static">Sprite Static</SelectItem>
               <SelectItem value="sprite_animation">Sprite Animation</SelectItem>
               <SelectItem value="texture">Texture</SelectItem>
@@ -120,7 +128,7 @@ export function AssetTable({ projectId }: AssetTableProps) {
             <TableRow className="border-border/50">
               <TableHead>Key</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>Expected Format(s)</TableHead>
+              <TableHead>File Type</TableHead>
               <TableHead>Version</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Assignee</TableHead>
@@ -149,24 +157,30 @@ export function AssetTable({ projectId }: AssetTableProps) {
                   className="border-border/50 cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => handleRowClick(asset)}
                 >
-                  <TableCell className="font-medium">{asset.key}</TableCell>
+                  <TableCell className="font-medium">
+                    <InlineEdit
+                      value={asset.key}
+                      type="text"
+                      onSave={(value) => handleAssetUpdate(asset.id, { key: value })}
+                      placeholder="Asset key"
+                    />
+                  </TableCell>
                   <TableCell>
                     <EnumBadge type={asset.type} />
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1">
-                      {getExpectedFormats(asset.type).map((format) => (
-                        <Badge key={format} variant="secondary" className="text-xs">
-                          {format}
-                        </Badge>
-                      ))}
-                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      .{asset.file_type}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{formatVersion(asset.current.version)}</Badge>
                   </TableCell>
                   <TableCell>
-                    <StatusChip status={asset.status} />
+                    <InlineStatusEdit
+                      status={asset.status}
+                      onSave={(status) => handleAssetUpdate(asset.id, { status })}
+                    />
                   </TableCell>
                   <TableCell>
                     <span className="text-sm">{getAssigneeName(asset.assignee_user_id)}</span>

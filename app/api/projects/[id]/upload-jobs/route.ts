@@ -3,10 +3,11 @@ import { listUploadJobs } from '@/lib/mock/upload-jobs'
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const jobs = await listUploadJobs(params.id)
+        const { id } = await params
+        const jobs = await listUploadJobs(id)
         return NextResponse.json(jobs)
     } catch (error) {
         return NextResponse.json(

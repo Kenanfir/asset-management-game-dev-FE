@@ -65,7 +65,6 @@ A modern Next.js frontend for managing game assets with version control, validat
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd assettrackr-frontend
    ```
 
 2. **Install dependencies**
@@ -80,9 +79,10 @@ A modern Next.js frontend for managing game assets with version control, validat
    cp .env.example .env.local
    ```
    
-   Configure the following variables:
+   The `.env.local` file is already configured with default values. You can modify these if needed:
    ```env
    NEXT_PUBLIC_API_URL=http://localhost:3001/api
+   NODE_ENV=development
    ```
 
 4. **Run the development server**

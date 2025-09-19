@@ -28,6 +28,10 @@ const statusConfig = {
     label: "Needs Update",
     className: "status-needs-update",
   },
+  canceled: {
+    label: "Canceled",
+    className: "status-canceled",
+  },
 }
 
 export function StatusChip({ status, className }: StatusChipProps) {

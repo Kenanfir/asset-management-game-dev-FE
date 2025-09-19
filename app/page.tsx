@@ -107,7 +107,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-border/50 py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2024 AssetTrackr. Built for game developers.</p>
+          <p>&copy; 2025 AssetTrackr. Built for game developers.</p>
         </div>
       </footer>
     </div>

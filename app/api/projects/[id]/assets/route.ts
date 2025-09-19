@@ -3,9 +3,10 @@ import { listAssets } from '@/lib/mock/assets'
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const { searchParams } = new URL(request.url)
         const search = searchParams.get('search') || undefined
         const status = searchParams.get('status')?.split(',') || []
@@ -17,7 +18,7 @@ export async function GET(
             type: type.filter(Boolean),
         }
 
-        const assets = await listAssets(params.id, filters)
+        const assets = await listAssets(id, filters)
         return NextResponse.json(assets)
     } catch (error) {
         return NextResponse.json(

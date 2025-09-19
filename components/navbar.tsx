@@ -42,7 +42,7 @@ export function Navbar() {
               <span className="text-black font-bold text-sm">F</span>
             </div>
             <span className="font-bold text-lg bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-              ForgeAssets
+              AssetTrackr
             </span>
           </Link>
 
