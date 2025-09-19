@@ -27,17 +27,19 @@ A modern Next.js frontend for managing game assets with version control, validat
 - **Bulk Upload** - Upload multiple files simultaneously
 
 ### User Interface
-- **Modern Design** - Dark theme with game-inspired aesthetics
+- **Modern Design** - Dark theme with game-inspired aesthetics and cyan accents
 - **Responsive Layout** - Works on desktop, tablet, and mobile
 - **Accessible Components** - Built with accessibility in mind
 - **Real-time Feedback** - Loading states, error handling, and success notifications
+- **Inline Editing** - Edit asset keys and status directly in the table
+- **Smooth Interactions** - Proper event handling prevents unwanted popups
 
 ## 🛠️ Tech Stack
 
 ### Frontend Framework
-- **Next.js 14** - React framework with App Router
+- **Next.js 15** - React framework with App Router
 - **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first styling
+- **Tailwind CSS v3** - Utility-first styling with custom design system
 - **shadcn/ui** - High-quality component library
 
 ### State Management
@@ -208,6 +210,44 @@ pnpm type-check
 # Build for production
 pnpm build
 ```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### Styling Not Loading
+If the app appears unstyled or with overlapping elements:
+1. Ensure you're using the correct Tailwind CSS version (v3.4.0+)
+2. Check that `postcss.config.mjs` is properly configured
+3. Verify `tailwind.config.ts` exists and is properly set up
+4. Restart the development server: `pnpm dev`
+
+#### Inline Editing Issues
+If clicking on editable fields opens the asset drawer:
+1. This has been fixed in the latest version
+2. Ensure you're using the updated `inline-edit.tsx` component
+3. The fix includes proper event propagation handling
+
+#### Build Errors
+If you encounter build errors:
+1. Clear the Next.js cache: `rm -rf .next`
+2. Reinstall dependencies: `rm -rf node_modules && pnpm install`
+3. Check for TypeScript errors: `pnpm type-check`
+
+## 📋 Recent Updates
+
+### v1.1.0 - Styling & UX Improvements
+- **Fixed CSS Styling Issues** - Resolved OKLCH to HSL color format mismatch
+- **Improved Dark Theme** - Enhanced dark theme with proper background colors and cyan accents
+- **Fixed Inline Editing** - Resolved click event bubbling that caused unwanted drawer popups
+- **Updated Dependencies** - Upgraded to Tailwind CSS v3 and Next.js 15
+- **Enhanced Layout** - Fixed overlapping elements and transparent backgrounds
+
+### v1.0.0 - Initial Release
+- Complete asset management system
+- Project-based organization
+- Real-time validation and upload tracking
+- Modern dark theme UI
 
 ## 🤝 Contributing
 
