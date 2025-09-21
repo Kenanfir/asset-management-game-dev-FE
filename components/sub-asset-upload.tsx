@@ -3,18 +3,20 @@
 import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Upload, X, File, AlertCircle, CheckCircle } from 'lucide-react'
 import { useUIStore } from '@/lib/store'
 import { useUploadFiles } from '@/lib/hooks/use-upload'
-import type { AssetType } from '@/lib/types'
+import { useUpdateSubAsset } from '@/lib/hooks/use-asset-groups'
+import type { SubAsset } from '@/lib/types'
 import { getExpectedFormats } from '@/lib/rule-packs'
+import { toast } from 'sonner'
 
-interface FileUploadProps {
+interface SubAssetUploadProps {
+    subAsset: SubAsset
     projectId: string
-    assetType?: AssetType
     onUploadComplete?: (jobId: string) => void
     className?: string
 }
@@ -26,19 +28,20 @@ interface FileWithPreview extends File {
     error?: string
 }
 
-export function FileUpload({
+export function SubAssetUpload({
+    subAsset,
     projectId,
-    assetType,
     onUploadComplete,
     className
-}: FileUploadProps) {
+}: SubAssetUploadProps) {
     const [files, setFiles] = useState<FileWithPreview[]>([])
     const [isDragActive, setIsDragActive] = useState(false)
 
     const { setDragActive, setUploading, setUploadProgress } = useUIStore()
     const uploadMutation = useUploadFiles()
+    const updateSubAssetMutation = useUpdateSubAsset()
 
-    const expectedFormats = assetType ? getExpectedFormats(assetType) : []
+    const expectedFormats = getExpectedFormats(subAsset.type)
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const newFiles: FileWithPreview[] = acceptedFiles.map((file) => ({
@@ -64,7 +67,7 @@ export function FileUpload({
         accept: expectedFormats.length > 0 ?
             Object.fromEntries(expectedFormats.map(format => [`.${format}`, []])) :
             undefined,
-        multiple: true,
+        multiple: subAsset.type === 'sprite_animation', // Allow multiple for sequences
     })
 
     const removeFile = (fileId: string) => {
@@ -87,12 +90,36 @@ export function FileUpload({
                 }
             })
 
+            // Update sub-asset version and history
+            const newVersion = subAsset.current.version + 1
+            const newFiles = files.map(f => f.name)
+
+            await updateSubAssetMutation.mutateAsync({
+                projectId,
+                subAssetId: subAsset.id,
+                data: {
+                    current: {
+                        version: newVersion,
+                        files: [...subAsset.current.files, ...newFiles]
+                    },
+                    history: [
+                        ...subAsset.history,
+                        {
+                            version: newVersion,
+                            files: newFiles,
+                            notes: `Uploaded ${files.length} file${files.length !== 1 ? 's' : ''}`,
+                        }
+                    ]
+                }
+            })
+
             onUploadComplete?.(result.id)
             setFiles([])
+            toast.success(`Uploaded to ${subAsset.base_path}`)
         } catch (error) {
             console.error('Upload failed:', error)
-            // Update file statuses to show error
             setFiles(prev => prev.map(f => ({ ...f, status: 'error' as const })))
+            toast.error('Upload failed')
         } finally {
             setUploading(false)
             setUploadProgress(0)
@@ -137,8 +164,28 @@ export function FileUpload({
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
     }
 
+    const resolvePathTemplate = (template: string, version: number) => {
+        return template
+            .replace('{base}', subAsset.base_path)
+            .replace('{key}', subAsset.key)
+            .replace('{version}', version.toString())
+            .replace('{ext}', subAsset.required_format || '')
+    }
+
+    const destinationPath = subAsset.path_template
+        ? resolvePathTemplate(subAsset.path_template, subAsset.current.version + 1)
+        : `${subAsset.base_path}/${subAsset.key}/v${subAsset.current.version + 1}/`
+
     return (
         <div className={className}>
+            {/* Destination Info */}
+            <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                <div className="text-sm font-medium mb-1">Upload Destination</div>
+                <div className="text-xs text-muted-foreground font-mono">
+                    {destinationPath}
+                </div>
+            </div>
+
             {/* Drop Zone */}
             <Card
                 {...getRootProps()}
@@ -151,17 +198,28 @@ export function FileUpload({
                             : 'border-border hover:border-primary/50'
                     }
         `}
+                role="button"
+                tabIndex={0}
+                aria-label="Upload files to sub-asset"
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        // Trigger file input
+                        const input = e.currentTarget.querySelector('input[type="file"]') as HTMLInputElement
+                        input?.click()
+                    }
+                }}
             >
-                <CardContent className="p-8 text-center">
+                <CardContent className="p-6 text-center">
                     <input {...getInputProps()} />
 
-                    <div className="space-y-4">
-                        <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                            <Upload className="h-6 w-6 text-muted-foreground" />
+                    <div className="space-y-3">
+                        <div className="mx-auto w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                            <Upload className="h-5 w-5 text-muted-foreground" />
                         </div>
 
                         <div>
-                            <p className="text-lg font-medium">
+                            <p className="text-base font-medium">
                                 {isDragActive
                                     ? 'Drop files here'
                                     : 'Drag & drop files here, or click to select'
@@ -172,6 +230,11 @@ export function FileUpload({
                                     ? `Accepted formats: ${expectedFormats.join(', ')}`
                                     : 'Any file type'
                                 }
+                                {subAsset.type === 'sprite_animation' && (
+                                    <span className="block mt-1 text-xs">
+                                        Multiple files supported for sequences
+                                    </span>
+                                )}
                             </p>
                         </div>
 
@@ -193,7 +256,7 @@ export function FileUpload({
                             onClick={handleUpload}
                             disabled={uploadMutation.isPending}
                         >
-                            {uploadMutation.isPending ? 'Uploading...' : 'Upload All'}
+                            {uploadMutation.isPending ? 'Uploading...' : 'Upload to Sub-Asset'}
                         </Button>
                     </div>
 
@@ -207,7 +270,7 @@ export function FileUpload({
                                     key={file.id}
                                     className="flex items-center gap-3 p-3 rounded-lg border bg-card"
                                 >
-                                    <div className="text-2xl">
+                                    <div className="text-xl">
                                         {getFileIcon(file)}
                                     </div>
 

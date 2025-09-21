@@ -21,11 +21,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { EnumBadge } from "@/components/ui/enum-badge"
 import { StatusChip } from "@/components/ui/status-chip"
-import { ExternalLink, Shield, AlertTriangle, Upload, X, Edit2, Save } from "lucide-react"
+import { ExternalLink, Shield, AlertTriangle, Upload, X, Edit2, Save, Copy, Github, Clock, User, FileText, Zap } from "lucide-react"
 import { useState } from "react"
 import { getRulePackForAssetType } from "@/lib/rule-packs"
 import { useRequestAssetUpdate } from "@/lib/hooks/use-assets"
 import { FileUpload } from "./file-upload"
+import { toast } from "sonner"
 import type { Asset } from "@/lib/types"
 
 interface AssetDrawerProps {
@@ -41,7 +42,23 @@ const updateReasons = [
   "Outdated content",
   "Performance optimization needed",
   "Compliance issues",
+  "Rule violations",
+  "Size optimization needed",
+  "Color profile issues",
+  "Compression artifacts",
 ]
+
+const severityIcons = {
+  error: "🚨",
+  warn: "⚠️",
+  info: "ℹ️",
+}
+
+const severityColors = {
+  error: "text-red-400",
+  warn: "text-amber-400",
+  info: "text-blue-400",
+}
 
 export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false)
@@ -64,12 +81,28 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
         reasons: selectedReasons,
         notes: updateNotes,
       })
+      toast.success("Asset marked for update")
       setUpdateDialogOpen(false)
       setSelectedReasons([])
       setUpdateNotes("")
     } catch (error) {
+      toast.error("Failed to mark asset for update")
       console.error("Failed to mark asset for update:", error)
     }
+  }
+
+  const handleCopyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast.success("Copied to clipboard")
+    } catch (error) {
+      toast.error("Failed to copy to clipboard")
+    }
+  }
+
+  const handleOpenInGitHub = (filePath: string) => {
+    // In a real app, this would open the file in GitHub
+    toast.info("GitHub integration coming soon")
   }
 
   const handleSaveRules = async () => {
@@ -115,22 +148,48 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
 
   return (
     <>
-      <DrawerHeader className="border-b border-border/50">
+      <DrawerHeader className="border-b border-border/50 sticky top-0 bg-background/95 backdrop-blur-sm z-10">
         <div className="flex items-start justify-between">
-          <div>
-            <DrawerTitle className="text-xl">{asset.key}</DrawerTitle>
-            <DrawerDescription className="mt-1">{asset.description}</DrawerDescription>
-            <div className="flex items-center gap-2 mt-2">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <DrawerTitle className="text-xl">{asset.key}</DrawerTitle>
+              <Badge variant="outline" className="text-xs">
+                {asset.current.version}
+              </Badge>
+              {currentFindings.length > 0 && (
+                <Badge variant="destructive" className="text-xs">
+                  {currentFindings.length} issue{currentFindings.length !== 1 ? 's' : ''}
+                </Badge>
+              )}
+            </div>
+            <DrawerDescription className="mb-3">{asset.description}</DrawerDescription>
+            <div className="flex items-center gap-2 flex-wrap">
               <EnumBadge type={asset.type} />
               <Badge variant="outline" className="text-xs">
                 .{asset.file_type}
               </Badge>
               <StatusChip status={asset.status} />
+              {asset.assignee_user_id && (
+                <Badge variant="secondary" className="text-xs">
+                  <User className="h-3 w-3 mr-1" />
+                  Assigned
+                </Badge>
+              )}
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2 ml-4">
+            <Button variant="outline" size="sm">
+              <Edit2 className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+            <Button variant="outline" size="sm">
+              <Upload className="h-4 w-4 mr-2" />
+              Upload
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </DrawerHeader>
 
@@ -146,31 +205,57 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
           <TabsContent value="summary" className="space-y-4">
             <Card className="rounded-xl border-border/50 bg-card/50">
               <CardHeader>
-                <CardTitle className="text-lg">Asset Information</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Asset Information
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Base Path:</span>
-                    <p className="font-mono">{asset.base_path}</p>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-muted-foreground">Base Path:</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="font-mono text-xs bg-muted/50 px-2 py-1 rounded">{asset.base_path}</p>
+                        <Button size="sm" variant="ghost" onClick={() => handleCopyToClipboard(asset.base_path)}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">File Type:</span>
+                      <div className="mt-1">
+                        <Badge variant="outline" className="text-xs">
+                          .{asset.file_type}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Versioning:</span>
+                      <p className="capitalize mt-1">{asset.versioning}</p>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">File Type:</span>
-                    <Badge variant="outline" className="text-xs">
-                      .{asset.file_type}
-                    </Badge>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Versioning:</span>
-                    <p className="capitalize">{asset.versioning}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Current Version:</span>
-                    <Badge variant="outline">{asset.current.version}</Badge>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Assignee:</span>
-                    <p>{asset.assignee_user_id ? `User ${asset.assignee_user_id}` : "Unassigned"}</p>
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-muted-foreground">Current Version:</span>
+                      <div className="mt-1">
+                        <Badge variant="outline">{asset.current.version}</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Assignee:</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <User className="h-3 w-3 text-muted-foreground" />
+                        <span>{asset.assignee_user_id ? `User ${asset.assignee_user_id}` : "Unassigned"}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Last Updated:</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Clock className="h-3 w-3 text-muted-foreground" />
+                        <span>2 hours ago</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -178,16 +263,28 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
 
             <Card className="rounded-xl border-border/50 bg-card/50">
               <CardHeader>
-                <CardTitle className="text-lg">Current Files</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Current Files
+                </CardTitle>
+                <CardDescription>{asset.current.files.length} file{asset.current.files.length !== 1 ? 's' : ''} in current version</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {asset.current.files.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 rounded bg-muted/50">
-                      <span className="font-mono text-sm">{file}</span>
-                      <Button size="sm" variant="ghost">
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
+                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-mono text-sm">{file}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => handleCopyToClipboard(file)}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleOpenInGitHub(file)}>
+                          <Github className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -196,7 +293,10 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
 
             <Card className="rounded-xl border-border/50 bg-card/50">
               <CardHeader>
-                <CardTitle className="text-lg">Quick Upload</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  Quick Upload
+                </CardTitle>
                 <CardDescription>Drag and drop files to upload a new version</CardDescription>
               </CardHeader>
               <CardContent>
@@ -205,6 +305,7 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
                   assetType={asset.type}
                   onUploadComplete={(jobId) => {
                     console.log('Upload completed:', jobId)
+                    toast.success('Upload job created successfully')
                     // In a real app, you'd refresh the asset data here
                   }}
                 />
@@ -259,7 +360,7 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
                                 <span className="text-sm font-medium">{finding.message}</span>
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                Expected: {finding.expected} | Actual: {finding.actual}
+                                Expected: {String(finding.expected)} | Actual: {String(finding.actual)}
                               </div>
                             </div>
                           ))}
@@ -326,12 +427,12 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
                           <Input
                             id={`rule-${key}`}
                             type={typeof value === 'number' ? 'number' : 'text'}
-                            value={value}
+                            value={String(value)}
                             onChange={(e) => {
                               const newValue = typeof value === 'number'
                                 ? Number(e.target.value)
                                 : e.target.value
-                              setEditedRules(prev => ({
+                              setEditedRules((prev: Record<string, any>) => ({
                                 ...prev,
                                 [key]: newValue
                               }))
@@ -378,38 +479,82 @@ export function AssetDrawer({ asset, projectId, onClose }: AssetDrawerProps) {
                 <CardTitle className="text-lg flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-amber-400" />
                   Current Issues
+                  {currentFindings.length > 0 && (
+                    <Badge variant="destructive" className="ml-2">
+                      {currentFindings.length}
+                    </Badge>
+                  )}
                 </CardTitle>
-                <CardDescription>Issues that need to be addressed</CardDescription>
+                <CardDescription>
+                  {currentFindings.length > 0
+                    ? `${currentFindings.length} issue${currentFindings.length !== 1 ? 's' : ''} that need to be addressed`
+                    : "No current issues found"
+                  }
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {currentFindings.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {currentFindings.map((finding, index) => (
-                      <div key={index} className="p-3 rounded bg-muted/50 border-l-2 border-amber-400">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={getSeverityColor(finding.severity)}>
-                            {getSeverityIcon(finding.severity)}
-                          </span>
-                          <span className="text-sm font-medium">{finding.message}</span>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Expected: {finding.expected} | Actual: {finding.actual}
-                        </div>
-                        {finding.evidence_paths && (
-                          <div className="mt-2">
-                            <span className="text-xs text-muted-foreground">Evidence:</span>
-                            {finding.evidence_paths.map((path, pathIndex) => (
-                              <div key={pathIndex} className="text-xs font-mono bg-background/50 p-1 rounded mt-1">
-                                {path}
-                              </div>
-                            ))}
+                      <div key={index} className="p-4 rounded-lg bg-muted/50 border border-border/50">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className={`p-2 rounded-full ${severityColors[finding.severity]} bg-opacity-20`}>
+                            <span className="text-lg">{severityIcons[finding.severity]}</span>
                           </div>
-                        )}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium">{finding.message}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {finding.rule_id}
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                              <div>
+                                <span className="text-muted-foreground">Expected:</span>
+                                <p className="font-mono bg-green-500/10 text-green-400 px-2 py-1 rounded mt-1">
+                                  {String(finding.expected)}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Actual:</span>
+                                <p className="font-mono bg-red-500/10 text-red-400 px-2 py-1 rounded mt-1">
+                                  {String(finding.actual)}
+                                </p>
+                              </div>
+                            </div>
+                            {finding.evidence_paths && finding.evidence_paths.length > 0 && (
+                              <div className="mt-3">
+                                <span className="text-xs text-muted-foreground font-medium">Evidence:</span>
+                                <div className="space-y-1 mt-1">
+                                  {finding.evidence_paths.map((path, pathIndex) => (
+                                    <div key={pathIndex} className="flex items-center justify-between text-xs font-mono bg-background/50 p-2 rounded border">
+                                      <span>{path}</span>
+                                      <div className="flex items-center gap-1">
+                                        <Button size="sm" variant="ghost" onClick={() => handleCopyToClipboard(path)}>
+                                          <Copy className="h-3 w-3" />
+                                        </Button>
+                                        <Button size="sm" variant="ghost" onClick={() => handleOpenInGitHub(path)}>
+                                          <Github className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">No current issues found.</p>
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Zap className="h-8 w-8 text-green-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">All Good!</h3>
+                    <p className="text-muted-foreground">No issues found for this asset.</p>
+                  </div>
                 )}
               </CardContent>
             </Card>

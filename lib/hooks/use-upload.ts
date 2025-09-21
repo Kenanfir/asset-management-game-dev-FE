@@ -24,15 +24,15 @@ export function useUploadJob(projectId: string, jobId: string) {
 export function useUploadFiles() {
     const queryClient = useQueryClient()
 
-    return useMutation({
+    return useMutation<UploadJob, Error, {
+        projectId: string
+        files: File[]
+        onProgress?: (progress: number) => void
+    }>({
         mutationFn: ({
             projectId,
             files,
             onProgress
-        }: {
-            projectId: string
-            files: File[]
-            onProgress?: (progress: number) => void
         }) => uploadApi.uploadFiles(projectId, files, onProgress),
         onSuccess: (_, { projectId }) => {
             queryClient.invalidateQueries({ queryKey: queryKeys.uploadJobs.list(projectId) })

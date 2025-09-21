@@ -5,7 +5,10 @@ import type {
     User,
     AssetUpdateRequest,
     ValidationResult,
-    BulkUploadJob
+    BulkUploadJob,
+    AssetGroup,
+    SubAsset,
+    ProjectSettings
 } from './types'
 
 // API Configuration
@@ -62,8 +65,9 @@ async function apiRequest<T>(
 }
 
 // Import mock data as fallback
-import { listProjects as mockListProjects, getProject as mockGetProject, createProject as mockCreateProject } from './mock/projects'
+import { listProjects as mockListProjects, getProject as mockGetProject, createProject as mockCreateProject, getProjectSettings as mockGetProjectSettings, updateProjectSettings as mockUpdateProjectSettings } from './mock/projects'
 import { listAssets as mockListAssets, getAsset as mockGetAsset, requestAssetUpdate as mockRequestAssetUpdate } from './mock/assets'
+import { listAssetGroups as mockListAssetGroups, getAssetGroup as mockGetAssetGroup, createAssetGroup as mockCreateAssetGroup, createSubAsset as mockCreateSubAsset, updateSubAsset as mockUpdateSubAsset, markNeedsUpdate as mockMarkNeedsUpdate } from './mock/asset-groups'
 import { listUploadJobs as mockListUploadJobs, createUploadJob as mockCreateUploadJob } from './mock/upload-jobs'
 
 // Projects API
@@ -82,7 +86,11 @@ export const projectsApi = {
             return await apiRequest<Project>(`/projects/${id}`)
         } catch (error) {
             // Fallback to mock data
-            return await mockGetProject(id)
+            const project = await mockGetProject(id)
+            if (!project) {
+                throw new ApiError('Project not found', 404)
+            }
+            return project
         }
     },
 
@@ -108,6 +116,31 @@ export const projectsApi = {
         apiRequest<void>(`/projects/${id}`, {
             method: 'DELETE',
         }),
+
+    getSettings: async (id: string): Promise<ProjectSettings> => {
+        try {
+            return await apiRequest<ProjectSettings>(`/projects/${id}/settings`)
+        } catch (error) {
+            // Fallback to mock data
+            const settings = await mockGetProjectSettings(id)
+            if (!settings) {
+                throw new ApiError('Project settings not found', 404)
+            }
+            return settings
+        }
+    },
+
+    updateSettings: async (id: string, settings: Partial<ProjectSettings>): Promise<ProjectSettings> => {
+        try {
+            return await apiRequest<ProjectSettings>(`/projects/${id}/settings`, {
+                method: 'PATCH',
+                body: JSON.stringify(settings),
+            })
+        } catch (error) {
+            // Fallback to mock data
+            return await mockUpdateProjectSettings(id, settings)
+        }
+    },
 }
 
 // Assets API
@@ -130,7 +163,11 @@ export const assetsApi = {
             return await apiRequest<Asset>(`/projects/${projectId}/assets/${assetId}`)
         } catch (error) {
             // Fallback to mock data
-            return await mockGetAsset(projectId, assetId)
+            const asset = await mockGetAsset(projectId, assetId)
+            if (!asset) {
+                throw new ApiError('Asset not found', 404)
+            }
+            return asset
         }
     },
 
@@ -230,6 +267,79 @@ export const uploadApi = {
             method: 'POST',
             body: JSON.stringify({ files: files.map(f => ({ name: f.name, size: f.size, type: f.type })) }),
         }),
+}
+
+// Asset Groups API
+export const assetGroupsApi = {
+    list: async (projectId: string): Promise<AssetGroup[]> => {
+        try {
+            return await apiRequest<AssetGroup[]>(`/projects/${projectId}/asset-groups`)
+        } catch (error) {
+            // Fallback to mock data
+            return await mockListAssetGroups(projectId)
+        }
+    },
+
+    get: async (projectId: string, groupId: string): Promise<AssetGroup> => {
+        try {
+            return await apiRequest<AssetGroup>(`/projects/${projectId}/asset-groups/${groupId}`)
+        } catch (error) {
+            // Fallback to mock data
+            const group = await mockGetAssetGroup(projectId, groupId)
+            if (!group) {
+                throw new ApiError('Asset group not found', 404)
+            }
+            return group
+        }
+    },
+
+    create: async (projectId: string, data: Omit<AssetGroup, 'id' | 'children'>): Promise<AssetGroup> => {
+        try {
+            return await apiRequest<AssetGroup>(`/projects/${projectId}/asset-groups`, {
+                method: 'POST',
+                body: JSON.stringify(data),
+            })
+        } catch (error) {
+            // Fallback to mock data
+            return await mockCreateAssetGroup(projectId, data)
+        }
+    },
+
+    createSubAsset: async (projectId: string, groupId: string, data: Omit<SubAsset, 'id'>): Promise<SubAsset> => {
+        try {
+            return await apiRequest<SubAsset>(`/projects/${projectId}/asset-groups/${groupId}/sub-assets`, {
+                method: 'POST',
+                body: JSON.stringify(data),
+            })
+        } catch (error) {
+            // Fallback to mock data
+            return await mockCreateSubAsset(projectId, groupId, data)
+        }
+    },
+
+    updateSubAsset: async (projectId: string, subAssetId: string, data: Partial<SubAsset>): Promise<SubAsset> => {
+        try {
+            return await apiRequest<SubAsset>(`/projects/${projectId}/sub-assets/${subAssetId}`, {
+                method: 'PATCH',
+                body: JSON.stringify(data),
+            })
+        } catch (error) {
+            // Fallback to mock data
+            return await mockUpdateSubAsset(projectId, subAssetId, data)
+        }
+    },
+
+    markNeedsUpdate: async (projectId: string, subAssetId: string, reasons: string[], notes?: string): Promise<void> => {
+        try {
+            return await apiRequest<void>(`/projects/${projectId}/sub-assets/${subAssetId}/mark-needs-update`, {
+                method: 'POST',
+                body: JSON.stringify({ reasons, notes }),
+            })
+        } catch (error) {
+            // Fallback to mock data
+            return await mockMarkNeedsUpdate(projectId, subAssetId, reasons, notes)
+        }
+    },
 }
 
 // Users API

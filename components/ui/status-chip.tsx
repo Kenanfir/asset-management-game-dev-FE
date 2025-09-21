@@ -10,27 +10,27 @@ interface StatusChipProps {
 const statusConfig = {
   needed: {
     label: "Needed",
-    className: "status-needed",
+    className: "status-chip-needed",
   },
   in_progress: {
     label: "In Progress",
-    className: "status-in-progress",
+    className: "status-chip-in-progress",
   },
   review: {
     label: "Review",
-    className: "status-review",
+    className: "status-chip-review",
   },
   done: {
     label: "Done",
-    className: "status-done",
+    className: "status-chip-done",
   },
   needs_update: {
     label: "Needs Update",
-    className: "status-needs-update",
+    className: "status-chip-needs-update",
   },
   canceled: {
     label: "Canceled",
-    className: "status-canceled",
+    className: "status-chip-canceled",
   },
 }
 

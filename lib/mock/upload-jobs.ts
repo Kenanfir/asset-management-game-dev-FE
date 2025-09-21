@@ -115,7 +115,21 @@ export async function createUploadJob(projectId: string, files: string[]): Promi
   setTimeout(() => {
     newJob.status = "done"
     newJob.updated_at = new Date().toISOString()
+
+    // Simulate version bump for assets
+    bumpAssetVersions(projectId, files)
   }, 8000)
 
   return newJob
+}
+
+// Helper function to bump asset versions when upload completes
+function bumpAssetVersions(projectId: string, files: string[]) {
+  // In a real app, this would update the actual asset data
+  console.log(`Bumping versions for project ${projectId} with files:`, files)
+
+  // Simulate creating new asset versions
+  files.forEach(file => {
+    console.log(`Creating new version for file: ${file}`)
+  })
 }

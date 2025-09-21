@@ -3,17 +3,21 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+// Removed Tabs imports since we're using sidebar navigation
 import { ArrowLeft, ExternalLink, GitBranch, Clock, Activity } from "lucide-react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useProject } from "@/lib/hooks/use-projects"
-import { AssetTable } from "@/components/asset-table"
+import { HierarchicalAssetTable } from "@/components/hierarchical-asset-table"
 import { UploadJobs } from "@/components/upload-jobs"
+import { ProjectSettings } from "@/components/project-settings"
+import { useUrlParams } from "@/lib/hooks/use-url-params"
 
 export default function ProjectPage() {
   const params = useParams()
   const { data: project, isLoading: loading, error } = useProject(params.id as string)
+  const { getParam, updateParams } = useUrlParams()
+  const currentTab = getParam("tab", "overview")
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -23,6 +27,8 @@ export default function ProjectPage() {
       minute: "2-digit",
     })
   }
+
+  // Tab switching is now handled by the sidebar navigation
 
   if (loading) {
     return (
@@ -82,15 +88,9 @@ export default function ProjectPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="assets" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="assets">Assets</TabsTrigger>
-          <TabsTrigger value="uploads">Uploads</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-4">
+      {/* Content based on current tab */}
+      <div className="space-y-4">
+        {currentTab === "overview" && (
           <Card className="rounded-xl border border-border/50 bg-card/50">
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -125,16 +125,20 @@ export default function ProjectPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        )}
 
-        <TabsContent value="assets">
-          <AssetTable projectId={project.id} />
-        </TabsContent>
+        {currentTab === "assets" && (
+          <HierarchicalAssetTable projectId={project.id} />
+        )}
 
-        <TabsContent value="uploads">
+        {currentTab === "uploads" && (
           <UploadJobs projectId={project.id} />
-        </TabsContent>
-      </Tabs>
+        )}
+
+        {currentTab === "settings" && (
+          <ProjectSettings projectId={project.id} />
+        )}
+      </div>
     </div>
   )
 }

@@ -1,11 +1,16 @@
 "use client"
 
+import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { CheckCircle, Clock, AlertCircle, GitPullRequest, Upload, Zap, RefreshCw } from "lucide-react"
+import { CheckCircle, Clock, AlertCircle, GitPullRequest, Upload, Zap, RefreshCw, ExternalLink, FileText } from "lucide-react"
 import { useUploadJobs, useUploadFiles } from "@/lib/hooks/use-upload"
+import { useUIStore } from "@/lib/store"
+import { toast } from "sonner"
+import { CardSkeleton } from "./ui/skeleton"
+import { NewUploadDialog } from "./new-upload-dialog"
 import type { UploadJob, UploadJobStatus } from "@/lib/types"
 
 interface UploadJobsProps {
@@ -60,22 +65,33 @@ const statusConfig = {
 export function UploadJobs({ projectId }: UploadJobsProps) {
   const { data: jobs = [], isLoading: loading, error } = useUploadJobs(projectId)
   const uploadMutation = useUploadFiles()
+  const { setSelectedAsset, setDrawerOpen } = useUIStore()
+  const [newUploadDialogOpen, setNewUploadDialogOpen] = useState(false)
 
   const handleTestUpload = async () => {
     try {
       // Create mock files for testing
       const mockFiles = [
-        new File(['test content'], 'test_asset.png', { type: 'image/png' }),
-        new File(['test content'], 'test_texture.jpg', { type: 'image/jpeg' }),
+        new File(['test content'], 'hero_sprite_v3.png', { type: 'image/png' }),
+        new File(['test content'], 'background_music_v2.wav', { type: 'audio/wav' }),
       ]
 
       await uploadMutation.mutateAsync({
         projectId,
         files: mockFiles,
       })
+
+      toast.success("Upload job created successfully")
     } catch (error) {
+      toast.error("Failed to create upload job")
       console.error("Failed to create upload job:", error)
     }
+  }
+
+  const handleViewAsset = (assetKey: string) => {
+    // In a real app, this would find the asset by key and open the drawer
+    console.log(`Opening asset: ${assetKey}`)
+    toast.info(`Opening asset: ${assetKey}`)
   }
 
   const formatDate = (dateString: string) => {
@@ -100,9 +116,18 @@ export function UploadJobs({ projectId }: UploadJobsProps) {
 
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
-        <p className="text-muted-foreground">Loading upload jobs...</p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">Upload Jobs</h3>
+            <p className="text-sm text-muted-foreground">Track asset upload and processing status</p>
+          </div>
+        </div>
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     )
   }
@@ -114,10 +139,16 @@ export function UploadJobs({ projectId }: UploadJobsProps) {
           <h3 className="text-lg font-semibold">Upload Jobs</h3>
           <p className="text-sm text-muted-foreground">Track asset upload and processing status</p>
         </div>
-        <Button onClick={handleTestUpload} variant="outline">
-          <Upload className="mr-2 h-4 w-4" />
-          Test Upload
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setNewUploadDialogOpen(true)}>
+            <Upload className="mr-2 h-4 w-4" />
+            New Upload
+          </Button>
+          <Button onClick={handleTestUpload} variant="outline">
+            <Upload className="mr-2 h-4 w-4" />
+            Test Upload
+          </Button>
+        </div>
       </div>
 
       {jobs.length === 0 ? (
@@ -176,12 +207,28 @@ export function UploadJobs({ projectId }: UploadJobsProps) {
                 <CardContent className="space-y-4">
                   {/* Files */}
                   <div>
-                    <h4 className="text-sm font-medium mb-2">Files</h4>
-                    <div className="flex flex-wrap gap-2">
+                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Files ({job.files.length})
+                    </h4>
+                    <div className="space-y-2">
                       {job.files.map((file, index) => (
-                        <Badge key={index} variant="secondary" className="font-mono text-xs">
-                          {file}
-                        </Badge>
+                        <div key={index} className="flex items-center justify-between p-2 rounded bg-muted/50 border border-border/50">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-3 w-3 text-muted-foreground" />
+                            <span className="font-mono text-xs">{file}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleViewAsset(file)}
+                              className="h-6 w-6 p-0"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -279,6 +326,16 @@ export function UploadJobs({ projectId }: UploadJobsProps) {
           })}
         </div>
       )}
+
+      <NewUploadDialog
+        projectId={projectId}
+        open={newUploadDialogOpen}
+        onOpenChange={setNewUploadDialogOpen}
+        onUploadComplete={(jobId) => {
+          console.log('Upload completed:', jobId)
+          toast.success('Upload job created successfully')
+        }}
+      />
     </div>
   )
 }

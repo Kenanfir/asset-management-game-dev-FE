@@ -17,6 +17,22 @@ const mockFindings: RuleFinding[] = [
     message: "Texture dimensions must be power of 2 for optimal GPU performance",
     evidence_paths: ["assets/textures/ground_texture.png"],
   },
+  {
+    rule_id: "sprite_static.max_dimensions",
+    severity: "error",
+    expected: "Max 1024x1024",
+    actual: "2048x2048",
+    message: "Sprite exceeds maximum allowed dimensions",
+    evidence_paths: ["assets/sprites/hero/hero_idle.png"],
+  },
+  {
+    rule_id: "audio_music.sample_rate",
+    severity: "warn",
+    expected: "48000 Hz",
+    actual: "44100 Hz",
+    message: "Audio sample rate is below recommended quality",
+    evidence_paths: ["assets/audio/music/background_music_v1.wav"],
+  },
 ]
 
 export const mockAssets: Asset[] = [
@@ -41,7 +57,7 @@ export const mockAssets: Asset[] = [
         version: "v2",
         files: ["hero_idle.png", "hero_walk_01.png", "hero_walk_02.png"],
         notes: "Added walking animation frames",
-        findings: [mockFindings[0]],
+        findings: [mockFindings[0], mockFindings[2]],
       },
     ],
     status: "needs_update",

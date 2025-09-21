@@ -7,6 +7,7 @@ interface UIState {
     searchQuery: string
     statusFilter: string[]
     typeFilter: string[]
+    allSelected: boolean
 
     // Upload state
     isUploading: boolean
@@ -20,6 +21,8 @@ interface UIState {
     // Actions
     setSelectedAssets: (assets: string[]) => void
     toggleAssetSelection: (assetId: string) => void
+    selectAllAssets: (assetIds: string[]) => void
+    clearSelection: () => void
     setSearchQuery: (query: string) => void
     setStatusFilter: (status: string[]) => void
     setTypeFilter: (type: string[]) => void
@@ -39,6 +42,7 @@ export const useUIStore = create<UIState>()(
             searchQuery: '',
             statusFilter: [],
             typeFilter: [],
+            allSelected: false,
             isUploading: false,
             uploadProgress: 0,
             dragActive: false,
@@ -53,8 +57,19 @@ export const useUIStore = create<UIState>()(
                 const newSelection = selectedAssets.includes(assetId)
                     ? selectedAssets.filter(id => id !== assetId)
                     : [...selectedAssets, assetId]
-                set({ selectedAssets: newSelection })
+                set({ selectedAssets: newSelection, allSelected: false })
             },
+
+            selectAllAssets: (assetIds) => {
+                const { selectedAssets } = get()
+                const allSelected = selectedAssets.length === assetIds.length && assetIds.every(id => selectedAssets.includes(id))
+                set({
+                    selectedAssets: allSelected ? [] : assetIds,
+                    allSelected: !allSelected
+                })
+            },
+
+            clearSelection: () => set({ selectedAssets: [], allSelected: false }),
 
             setSearchQuery: (query) => set({ searchQuery: query }),
 

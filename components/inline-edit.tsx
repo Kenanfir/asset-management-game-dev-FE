@@ -161,7 +161,7 @@ export function InlineStatusEdit({ status, onSave, className = "" }: InlineStatu
             value={status}
             type="select"
             options={statusOptions}
-            onSave={onSave}
+            onSave={(value) => onSave(value as Status)}
             className={className}
         />
     )

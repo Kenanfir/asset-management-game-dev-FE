@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { FileUpload } from './file-upload'
+import { EnhancedFileUpload } from './enhanced-file-upload'
 import { useCreateAsset } from '@/lib/hooks/use-assets'
 import { useUIStore } from '@/lib/store'
 import { getExpectedFormats } from '@/lib/rule-packs'
@@ -286,7 +286,7 @@ export function BulkOperations({ projectId }: BulkOperationsProps) {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
-                        <FileUpload
+                        <EnhancedFileUpload
                             projectId={projectId}
                             onUploadComplete={(jobId) => {
                                 console.log('Bulk upload completed:', jobId)
