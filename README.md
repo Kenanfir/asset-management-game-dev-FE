@@ -2,29 +2,30 @@
 
 A modern Next.js frontend for managing game assets with version control, validation, and automated delivery workflows.
 
+> **⚠️ Development Status**: This is a frontend-only MVP with mock data. Backend integration and authentication are not yet implemented.
+
 ## 🎮 Features
 
-### Core Functionality
-- **Project Management** - Connect and manage multiple game repositories
-- **Asset Table** - Centralized view of all game assets with filtering and search
+### ✅ Implemented Features
+- **Project Management** - Connect and manage multiple game repositories (UI complete, mock data)
+- **Asset Table** - Centralized hierarchical view of asset groups and sub-assets with filtering and search
 - **Version Control** - Track asset versions with detailed history and change tracking
-- **Validation Pipeline** - Automated asset validation with rule-based quality checks
-- **Bulk Operations** - Add multiple assets and upload files in batches
-- **Real-time Updates** - Live progress tracking for upload jobs and validation
-
-### Asset Management
 - **Type System** - Comprehensive asset type definitions (sprites, textures, audio, 3D models)
 - **Rule Packs** - Configurable validation rules per asset type
 - **Status Tracking** - Visual status indicators (needed, in_progress, review, done, needs_update)
 - **Assignee Management** - Assign assets to team members
-- **History Browser** - Complete version history with notes and validation findings
-
-### File Upload & Processing
 - **Drag & Drop** - Intuitive file upload with react-dropzone
 - **Format Validation** - Client-side validation based on asset type rules
-- **Auto-conversion** - Automatic format conversion with lossy/lossless indicators
 - **Progress Tracking** - Real-time upload progress with status updates
-- **Bulk Upload** - Upload multiple files simultaneously
+- **URL State Sync** - Filters and search parameters persist in URL
+
+### 🚧 In Development / Missing Features
+- **Authentication** - GitHub OAuth integration (mock button only)
+- **Path Template Preview** - Live preview of resolved asset paths with placeholders
+- **Target-Locked Uploads** - Upload files directly to specific sub-assets
+- **Server-Side Validation** - Backend file validation and processing
+- **Multi-Target Upload** - Upload to multiple sub-assets with sequence detection
+- **Real Backend Integration** - Currently uses mock data fallbacks
 
 ### User Interface
 - **Modern Design** - Dark theme with game-inspired aesthetics and cyan accents
@@ -85,6 +86,11 @@ A modern Next.js frontend for managing game assets with version control, validat
    ```env
    NEXT_PUBLIC_API_URL=http://localhost:3001/api
    NODE_ENV=development
+   # Add these for GitHub OAuth (when implemented):
+   # GITHUB_CLIENT_ID=your_github_client_id
+   # GITHUB_CLIENT_SECRET=your_github_client_secret
+   # NEXTAUTH_SECRET=your_nextauth_secret
+   # NEXTAUTH_URL=http://localhost:3000
    ```
 
 4. **Run the development server**
@@ -344,13 +350,52 @@ The app can be deployed to any platform that supports Next.js:
 
 ### Mock Data
 The app includes comprehensive mock data for development:
-- **Projects** - Sample game projects
-- **Assets** - Various asset types with validation findings
-- **Upload Jobs** - Simulated upload processing
-- **Users** - Team member data
+- **Projects** - Sample game projects with realistic data
+- **Asset Groups** - Hierarchical organization with sub-assets
+- **Upload Jobs** - Simulated upload processing with status tracking
+- **Users** - Team member data for assignee management
+- **Rule Packs** - Complete validation rules for all asset types
 
 ### API Fallbacks
-The API client automatically falls back to mock data when the backend is unavailable, making development seamless.
+The API client automatically falls back to mock data when the backend is unavailable, making development seamless. This allows the frontend to be developed and tested independently.
+
+### Current Limitations
+- **No Real Authentication** - Sign-in button is mock only
+- **No File Upload Processing** - Files are validated client-side only
+- **No Path Template Resolution** - Templates are stored but not previewed
+- **No Backend Integration** - All data comes from mock sources
+
+## 🚀 Next Development Steps
+
+### Priority 1: Authentication
+1. **GitHub OAuth Setup**
+   - Create GitHub OAuth app
+   - Add API route: `app/api/auth/github/route.ts`
+   - Implement callback handling
+   - Add session management
+
+### Priority 2: File Upload Integration
+1. **Target-Locked Uploads**
+   - Wire upload buttons to FileUpload component
+   - Add sub-asset selection in upload flow
+   - Implement path template resolution
+
+2. **Server-Side Validation**
+   - Add file validation API endpoints
+   - Implement proper error handling
+   - Add progress tracking
+
+### Priority 3: Path Template System
+1. **Live Path Preview**
+   - Create PathPreview component
+   - Add template resolution logic
+   - Integrate with SubAssetDrawer
+
+### Priority 4: Backend Integration
+1. **Replace Mock Data**
+   - Connect to real API endpoints
+   - Implement proper error handling
+   - Add loading states
 
 ### Testing
 ```bash
@@ -389,6 +434,12 @@ If you encounter build errors:
 
 ## 📋 Recent Updates
 
+### v1.2.0 - Frontend Audit & Documentation Update
+- **Updated README** - Clear development status and feature completeness indicators
+- **Added Missing Features List** - Documented gaps for future development
+- **Enhanced Mock Data** - Improved asset group hierarchy and sub-asset management
+- **Security Review** - Identified areas for improvement in file validation and XSS prevention
+
 ### v1.1.0 - Styling & UX Improvements
 - **Fixed CSS Styling Issues** - Resolved OKLCH to HSL color format mismatch
 - **Improved Dark Theme** - Enhanced dark theme with proper background colors and cyan accents
@@ -397,10 +448,11 @@ If you encounter build errors:
 - **Enhanced Layout** - Fixed overlapping elements and transparent backgrounds
 
 ### v1.0.0 - Initial Release
-- Complete asset management system
+- Complete asset management system UI
 - Project-based organization
-- Real-time validation and upload tracking
+- Hierarchical asset groups and sub-assets
 - Modern dark theme UI
+- Mock data integration for development
 
 ## 🤝 Contributing
 
