@@ -40,7 +40,7 @@ const statusConfig = {
     progress: 60,
   },
   opened_pr: {
-    label: "PR Opened",
+    label: "PullRequest",
     icon: GitPullRequest,
     color: "text-violet-400",
     bgColor: "bg-violet-500/20",
@@ -237,43 +237,57 @@ export function UploadJobs({ projectId }: UploadJobsProps) {
                   {job.status !== "failed" && (
                     <div>
                       <h4 className="text-sm font-medium mb-3">Progress</h4>
-                      <div className="flex items-center gap-2">
-                        {timeline.map((step, index) => {
-                          const stepConfig = statusConfig[step.status]
-                          const StepIcon = stepConfig.icon
+                      <div className="space-y-3 px-4">
+                        {/* Progress Steps */}
+                        <div className="flex items-center w-full">
+                          {timeline.map((step, index) => {
+                            const stepConfig = statusConfig[step.status]
+                            const StepIcon = stepConfig.icon
 
-                          return (
-                            <div key={step.status} className="flex items-center">
-                              <div
-                                className={`
-                                flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors
-                                ${step.completed
-                                    ? `${stepConfig.bgColor} ${stepConfig.color} border-current`
-                                    : "border-muted bg-muted/20 text-muted-foreground"
-                                  }
-                                ${step.current ? "ring-2 ring-primary/50" : ""}
-                              `}
-                              >
-                                <StepIcon className="h-3 w-3" />
-                              </div>
-                              {index < timeline.length - 1 && (
+                            return (
+                              <div key={step.status} className="flex items-center flex-1">
                                 <div
                                   className={`
-                                  w-8 h-0.5 mx-1 transition-colors
-                                  ${step.completed ? "bg-primary" : "bg-muted"}
+                                flex items-center justify-center w-8 h-8 rounded-full border-2 transition-colors
+                                ${step.completed
+                                      ? `${stepConfig.bgColor} ${stepConfig.color} border-current`
+                                      : "border-muted bg-muted/20 text-muted-foreground"
+                                    }
+                                ${step.current ? "ring-2 ring-primary/50" : ""}
+                              `}
+                                >
+                                  <StepIcon className="h-3 w-3" />
+                                </div>
+                                {index < timeline.length - 1 && (
+                                  <div
+                                    className={`
+                                  flex-1 h-1 mx-2 transition-colors rounded-full
+                                  ${step.completed ? "bg-blue-500" : "bg-gray-900"}
                                 `}
-                                />
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                        <span>Queued</span>
-                        <span>Validating</span>
-                        <span>Converting</span>
-                        <span>PR Created</span>
-                        <span>Complete</span>
+                                  />
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                        {/* Progress Labels - Hidden on mobile */}
+                        <div className="hidden md:flex items-center w-full">
+                          {timeline.map((step, index) => {
+                            const stepConfig = statusConfig[step.status]
+                            return (
+                              <div key={`label-${step.status}`} className="flex items-center flex-1">
+                                <div className="w-8 text-center">
+                                  <span className="text-xs text-muted-foreground">
+                                    {stepConfig.label}
+                                  </span>
+                                </div>
+                                {index < timeline.length - 1 && (
+                                  <div className="flex-1 h-1 mx-2" />
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
                       </div>
                     </div>
                   )}
