@@ -7,9 +7,9 @@ interface ProjectsLayoutProps {
 
 export default function ProjectsLayout({ children }: ProjectsLayoutProps) {
   return (
-    <div className="min-h-screen">
+    <div className="h-screen overflow-hidden flex flex-col">
       <Navbar />
-      <main>{children}</main>
+      <main className="flex-1 overflow-hidden">{children}</main>
     </div>
   )
 }

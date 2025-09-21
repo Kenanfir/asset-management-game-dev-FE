@@ -90,7 +90,6 @@ export function Sidebar({ projectId, className }: SidebarProps) {
     <div className={cn("pb-12 w-64", className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          <h2 className="pixel-heading text-primary mb-4">Project Navigation</h2>
           <div
             className="space-y-1"
             role="menu"
