@@ -77,7 +77,8 @@ export function UploadJobs({ projectId }: UploadJobsProps) {
       ]
 
       await uploadMutation.mutateAsync({
-        projectId,
+        targetSubassetIds: [], // Test upload
+        mode: 'SINGLE',
         files: mockFiles,
       })
 

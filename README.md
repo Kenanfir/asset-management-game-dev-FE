@@ -2,7 +2,7 @@
 
 A modern Next.js frontend for managing game assets with version control, validation, and automated delivery workflows.
 
-> **⚠️ Development Status**: This is a frontend-only MVP with mock data. Backend integration and authentication are not yet implemented.
+> **⚠️ Development Status**: This is a frontend-only MVP with mock data. Backend integration is currently in progress (API layer connected).
 
 ## 🎮 Features
 
@@ -25,7 +25,7 @@ A modern Next.js frontend for managing game assets with version control, validat
 - **Target-Locked Uploads** - Upload files directly to specific sub-assets
 - **Server-Side Validation** - Backend file validation and processing
 - **Multi-Target Upload** - Upload to multiple sub-assets with sequence detection
-- **Real Backend Integration** - Currently uses mock data fallbacks
+- **Real Backend Integration** - API layer connected, UI integration in progress (uses mock data fallbacks for missing endpoints)
 
 ### User Interface
 - **Modern Design** - Dark theme with game-inspired aesthetics and cyan accents
@@ -84,7 +84,7 @@ A modern Next.js frontend for managing game assets with version control, validat
    
    The `.env.local` file is already configured with default values. You can modify these if needed:
    ```env
-   NEXT_PUBLIC_API_URL=http://localhost:3001/api
+   NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1/v1
    NODE_ENV=development
    # Add these for GitHub OAuth (when implemented):
    # GITHUB_CLIENT_ID=your_github_client_id
@@ -296,7 +296,7 @@ Coolify is a self-hosted alternative to Vercel/Netlify that you can deploy on yo
 **Development Environment:**
 ```env
 NODE_ENV=development
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
+NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
 ```
 
 **Production Environment:**

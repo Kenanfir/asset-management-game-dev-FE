@@ -52,7 +52,15 @@ async function apiRequest<T>(
             )
         }
 
-        return await response.json()
+        const data = await response.json()
+
+        // Extract content from standardized backend response format
+        // Backend returns: { message: string, content: T, errors: [] }
+        if (data && typeof data === 'object' && 'content' in data) {
+            return data.content as T
+        }
+
+        return data as T
     } catch (error) {
         if (error instanceof ApiError) {
             throw error
@@ -228,52 +236,67 @@ export const assetsApi = {
 // Upload API
 export const uploadApi = {
     uploadFiles: async (
-        projectId: string,
+        targetSubassetIds: string[],
+        mode: 'SINGLE' | 'SEQUENCE',
         files: File[],
         onProgress?: (progress: number) => void
     ): Promise<UploadJob> => {
         try {
             const formData = new FormData()
-            files.forEach((file, index) => {
-                formData.append(`files`, file)
+            files.forEach((file) => {
+                formData.append('files', file)
             })
-            formData.append('projectId', projectId)
+            formData.append('targetSubassetIds', JSON.stringify(targetSubassetIds))
+            formData.append('mode', mode)
 
-            // In a real implementation, this would be a proper multipart upload
-            return await apiRequest<UploadJob>('/upload', {
+            // Note: Content-Type header must not be set for multipart/form-data
+            // Browser will set it automatically with correct boundary
+            return await apiRequest<UploadJob>('/uploads', {
                 method: 'POST',
                 body: formData,
+                headers: {}, // Clear default Content-Type header
             })
         } catch (error) {
             // Fallback to mock data
-            return await mockCreateUploadJob(projectId, files.map(f => f.name))
+            return await mockCreateUploadJob('unknown', files.map(f => f.name))
         }
     },
 
     getJobs: async (projectId: string): Promise<UploadJob[]> => {
         try {
-            return await apiRequest<UploadJob[]>(`/projects/${projectId}/upload-jobs`)
+            // Note: Backend doesn't have project-specific job listing yet
+            // This will need backend implementation or should be removed
+            return await mockListUploadJobs(projectId)
         } catch (error) {
-            // Fallback to mock data
             return await mockListUploadJobs(projectId)
         }
     },
 
-    getJob: (projectId: string, jobId: string): Promise<UploadJob> =>
-        apiRequest<UploadJob>(`/projects/${projectId}/upload-jobs/${jobId}`),
+    getJob: async (jobId: string): Promise<UploadJob> => {
+        try {
+            return await apiRequest<UploadJob>(`/uploads/${jobId}`)
+        } catch (error) {
+            throw new ApiError('Upload job not found', 404)
+        }
+    },
 
-    validateFiles: (files: File[]): Promise<ValidationResult[]> =>
-        apiRequest<ValidationResult[]>('/validate', {
-            method: 'POST',
-            body: JSON.stringify({ files: files.map(f => ({ name: f.name, size: f.size, type: f.type })) }),
-        }),
+    validateFiles: async (files: File[]): Promise<ValidationResult[]> => {
+        try {
+            // Note: Backend doesn't have validation endpoint yet
+            // Return empty array for now
+            return []
+        } catch (error) {
+            return []
+        }
+    },
 }
 
 // Asset Groups API
 export const assetGroupsApi = {
     list: async (projectId: string): Promise<AssetGroup[]> => {
         try {
-            return await apiRequest<AssetGroup[]>(`/projects/${projectId}/asset-groups`)
+            // Use query parameter as per backend implementation
+            return await apiRequest<AssetGroup[]>(`/assets/groups?projectId=${projectId}`)
         } catch (error) {
             // Fallback to mock data
             return await mockListAssetGroups(projectId)
@@ -282,9 +305,13 @@ export const assetGroupsApi = {
 
     get: async (projectId: string, groupId: string): Promise<AssetGroup> => {
         try {
-            return await apiRequest<AssetGroup>(`/projects/${projectId}/asset-groups/${groupId}`)
+            // Backend doesn't have this endpoint yet, use mock
+            const group = await mockGetAssetGroup(projectId, groupId)
+            if (!group) {
+                throw new ApiError('Asset group not found', 404)
+            }
+            return group
         } catch (error) {
-            // Fallback to mock data
             const group = await mockGetAssetGroup(projectId, groupId)
             if (!group) {
                 throw new ApiError('Asset group not found', 404)
@@ -295,49 +322,59 @@ export const assetGroupsApi = {
 
     create: async (projectId: string, data: Omit<AssetGroup, 'id' | 'children'>): Promise<AssetGroup> => {
         try {
-            return await apiRequest<AssetGroup>(`/projects/${projectId}/asset-groups`, {
-                method: 'POST',
-                body: JSON.stringify(data),
-            })
+            // Backend doesn't have this endpoint yet, use mock
+            return await mockCreateAssetGroup(projectId, data)
         } catch (error) {
-            // Fallback to mock data
             return await mockCreateAssetGroup(projectId, data)
         }
     },
 
     createSubAsset: async (projectId: string, groupId: string, data: Omit<SubAsset, 'id'>): Promise<SubAsset> => {
         try {
-            return await apiRequest<SubAsset>(`/projects/${projectId}/asset-groups/${groupId}/sub-assets`, {
-                method: 'POST',
-                body: JSON.stringify(data),
-            })
+            // Backend doesn't have this endpoint yet, use mock
+            return await mockCreateSubAsset(projectId, groupId, data)
         } catch (error) {
-            // Fallback to mock data
             return await mockCreateSubAsset(projectId, groupId, data)
         }
     },
 
     updateSubAsset: async (projectId: string, subAssetId: string, data: Partial<SubAsset>): Promise<SubAsset> => {
         try {
-            return await apiRequest<SubAsset>(`/projects/${projectId}/sub-assets/${subAssetId}`, {
-                method: 'PATCH',
-                body: JSON.stringify(data),
-            })
+            // Backend doesn't have this endpoint yet, use mock
+            return await mockUpdateSubAsset(projectId, subAssetId, data)
         } catch (error) {
-            // Fallback to mock data
             return await mockUpdateSubAsset(projectId, subAssetId, data)
         }
     },
 
     markNeedsUpdate: async (projectId: string, subAssetId: string, reasons: string[], notes?: string): Promise<void> => {
         try {
-            return await apiRequest<void>(`/projects/${projectId}/sub-assets/${subAssetId}/mark-needs-update`, {
-                method: 'POST',
-                body: JSON.stringify({ reasons, notes }),
-            })
-        } catch (error) {
-            // Fallback to mock data
+            // Backend doesn't have this endpoint yet, use mock
             return await mockMarkNeedsUpdate(projectId, subAssetId, reasons, notes)
+        } catch (error) {
+            return await mockMarkNeedsUpdate(projectId, subAssetId, reasons, notes)
+        }
+    },
+
+    // New: Get sub-assets list (backend implemented)
+    getSubAssets: async (groupId?: string, projectId?: string): Promise<SubAsset[]> => {
+        try {
+            const params = new URLSearchParams()
+            if (groupId) params.append('groupId', groupId)
+            if (projectId) params.append('projectId', projectId)
+
+            return await apiRequest<SubAsset[]>(`/assets/sub-assets?${params}`)
+        } catch (error) {
+            return []
+        }
+    },
+
+    // New: Get sub-asset history (backend implemented)
+    getHistory: async (subAssetId: string) => {
+        try {
+            return await apiRequest(`/assets/sub-assets/${subAssetId}/history`)
+        } catch (error) {
+            return { subAsset: null, history: [] }
         }
     },
 }
@@ -357,13 +394,67 @@ export const usersApi = {
 // Auth API
 export const authApi = {
     signInWithGitHub: (): Promise<{ url: string }> =>
-        apiRequest<{ url: string }>('/auth/github'),
+        apiRequest<{ url: string }>('/auth/github/start'),
 
     signOut: (): Promise<void> =>
-        apiRequest<void>('/auth/signout', { method: 'POST' }),
+        apiRequest<void>('/auth/logout', { method: 'POST' }),
 
-    getSession: (): Promise<{ user: User | null }> =>
-        apiRequest<{ user: User | null }>('/auth/session'),
+    getMe: (): Promise<User> =>
+        apiRequest<User>('/auth/me'),
+
+    // Deprecated: use getMe instead
+    getSession: async (): Promise<{ user: User | null }> => {
+        try {
+            const user = await apiRequest<User>('/auth/me')
+            return { user }
+        } catch (error) {
+            return { user: null }
+        }
+    },
+}
+
+// Rule Packs API (NEW - connect to backend)
+export const rulePacksApi = {
+    list: async (): Promise<Array<{ key: string; displayName: string; rulesSummary: string }>> => {
+        try {
+            return await apiRequest('/rule-packs')
+        } catch (error) {
+            // Fallback to local rule packs
+            console.warn('Failed to fetch rule packs from backend, using local data')
+            return []
+        }
+    },
+}
+
+// Path Resolution API (NEW - connect to backend)
+export const pathApi = {
+    resolve: async (data: {
+        base: string
+        key: string
+        version: number
+        ext: string
+        pathTemplate: string
+    }): Promise<{ resolvedPath: string; template: string; variables: any }> => {
+        try {
+            return await apiRequest('/path/resolve', {
+                method: 'POST',
+                body: JSON.stringify(data),
+            })
+        } catch (error) {
+            // Fallback: simple template resolution
+            const resolvedPath = data.pathTemplate
+                .replace('{base}', data.base)
+                .replace('{key}', data.key)
+                .replace('{version}', String(data.version))
+                .replace('{ext}', data.ext)
+
+            return {
+                resolvedPath,
+                template: data.pathTemplate,
+                variables: data,
+            }
+        }
+    },
 }
 
 export { ApiError }

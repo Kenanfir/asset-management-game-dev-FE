@@ -80,7 +80,8 @@ export function FileUpload({
         try {
             const fileObjects = files.map(f => f as File)
             const result = await uploadMutation.mutateAsync({
-                projectId,
+                targetSubassetIds: [], // Generic upload, target handled by backend or context
+                mode: 'SINGLE',
                 files: fileObjects,
                 onProgress: (progress) => {
                     setUploadProgress(progress)

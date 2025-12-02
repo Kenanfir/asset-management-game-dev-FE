@@ -159,7 +159,8 @@ export function NewUploadDialog({
         try {
             const fileObjects = files.map(f => f as File)
             const result = await uploadMutation.mutateAsync({
-                projectId,
+                targetSubassetIds: selectedTargets.map(t => t.subAsset.id),
+                mode: uploadMode === 'sequence' ? 'SEQUENCE' : 'SINGLE',
                 files: fileObjects,
                 onProgress: (progress) => {
                     setUploadProgress(progress)

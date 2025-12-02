@@ -185,7 +185,8 @@ export function EnhancedFileUpload({
         try {
             const fileObjects = files.map(f => f as File)
             const result = await uploadMutation.mutateAsync({
-                projectId,
+                targetSubassetIds: selectedTarget.type === 'sub_asset' ? [selectedTarget.id] : [],
+                mode: selectedTarget.supports_sequence ? 'SEQUENCE' : 'SINGLE',
                 files: fileObjects,
                 onProgress: (progress) => {
                     setUploadProgress(progress)

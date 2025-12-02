@@ -83,7 +83,8 @@ export function SubAssetUpload({
         try {
             const fileObjects = files.map(f => f as File)
             const result = await uploadMutation.mutateAsync({
-                projectId,
+                targetSubassetIds: [subAsset.id],
+                mode: subAsset.type === 'sprite_animation' ? 'SEQUENCE' : 'SINGLE',
                 files: fileObjects,
                 onProgress: (progress) => {
                     setUploadProgress(progress)

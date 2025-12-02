@@ -12,11 +12,11 @@ export function useUploadJobs(projectId: string) {
     })
 }
 
-export function useUploadJob(projectId: string, jobId: string) {
+export function useUploadJob(jobId: string) {
     return useQuery({
-        queryKey: queryKeys.uploadJobs.detail(projectId, jobId),
-        queryFn: () => uploadApi.getJob(projectId, jobId),
-        enabled: !!projectId && !!jobId,
+        queryKey: queryKeys.uploadJobs.detail('', jobId),
+        queryFn: () => uploadApi.getJob(jobId),
+        enabled: !!jobId,
         refetchInterval: 2000,
     })
 }
@@ -25,17 +25,20 @@ export function useUploadFiles() {
     const queryClient = useQueryClient()
 
     return useMutation<UploadJob, Error, {
-        projectId: string
+        targetSubassetIds: string[]
+        mode: 'SINGLE' | 'SEQUENCE'
         files: File[]
         onProgress?: (progress: number) => void
     }>({
         mutationFn: ({
-            projectId,
+            targetSubassetIds,
+            mode,
             files,
             onProgress
-        }) => uploadApi.uploadFiles(projectId, files, onProgress),
-        onSuccess: (_, { projectId }) => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.uploadJobs.list(projectId) })
+        }) => uploadApi.uploadFiles(targetSubassetIds, mode, files, onProgress),
+        onSuccess: () => {
+            // Invalidate all upload jobs queries
+            queryClient.invalidateQueries({ queryKey: ['uploadJobs'] })
         },
     })
 }
