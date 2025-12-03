@@ -90,7 +90,7 @@ A modern Next.js frontend for managing game assets with version control, validat
    # GITHUB_CLIENT_ID=your_github_client_id
    # GITHUB_CLIENT_SECRET=your_github_client_secret
    # NEXTAUTH_SECRET=your_nextauth_secret
-   # NEXTAUTH_URL=http://localhost:3000
+   # NEXTAUTH_URL=http://localhost:3500
    ```
 
 4. **Run the development server**
@@ -101,7 +101,7 @@ A modern Next.js frontend for managing game assets with version control, validat
    ```
 
 5. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+   Navigate to [http://localhost:3500](http://localhost:3500)
 
 ## 📁 Project Structure
 
@@ -216,7 +216,7 @@ Coolify is a self-hosted alternative to Vercel/Netlify that you can deploy on yo
    ```env
    NODE_ENV=production
    NEXT_PUBLIC_API_URL=https://your-backend-domain.com/api
-   PORT=3000
+   PORT=3500
    ```
 
 5. **Configure Build Context**
@@ -271,9 +271,9 @@ Coolify is a self-hosted alternative to Vercel/Netlify that you can deploy on yo
    
    USER nextjs
    
-   EXPOSE 3000
+   EXPOSE 3500
    
-   ENV PORT 3000
+   ENV PORT 3500
    ENV HOSTNAME "0.0.0.0"
    
    CMD ["node", "server.js"]
@@ -319,7 +319,7 @@ NEXT_PUBLIC_API_URL=https://api.yourdomain.com/api
    - Add `corepack enable pnpm` to build command
 
 2. **Port Issues**
-   - Make sure your app listens on `0.0.0.0:3000`
+   - Make sure your app listens on `0.0.0.0:3500`
    - Check that `PORT` environment variable is set
 
 3. **Memory Issues**
