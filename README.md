@@ -7,7 +7,9 @@ A modern Next.js frontend for managing game assets with version control, validat
 ## 🎮 Features
 
 ### ✅ Implemented Features
-- **Project Management** - Connect and manage multiple game repositories (UI complete, mock data)
+- **Authentication** - Real GitHub OAuth integration with secure session management
+- **Real Backend Integration** - Connected to NestJS backend API
+- **Project Management** - Connect and manage multiple game repositories
 - **Asset Table** - Centralized hierarchical view of asset groups and sub-assets with filtering and search
 - **Version Control** - Track asset versions with detailed history and change tracking
 - **Type System** - Comprehensive asset type definitions (sprites, textures, audio, 3D models)
@@ -20,12 +22,10 @@ A modern Next.js frontend for managing game assets with version control, validat
 - **URL State Sync** - Filters and search parameters persist in URL
 
 ### 🚧 In Development / Missing Features
-- **Authentication** - GitHub OAuth integration (mock button only)
 - **Path Template Preview** - Live preview of resolved asset paths with placeholders
 - **Target-Locked Uploads** - Upload files directly to specific sub-assets
 - **Server-Side Validation** - Backend file validation and processing
 - **Multi-Target Upload** - Upload to multiple sub-assets with sequence detection
-- **Real Backend Integration** - API layer connected, UI integration in progress (uses mock data fallbacks for missing endpoints)
 
 ### User Interface
 - **Modern Design** - Dark theme with game-inspired aesthetics and cyan accents
@@ -84,7 +84,7 @@ A modern Next.js frontend for managing game assets with version control, validat
    
    The `.env.local` file is already configured with default values. You can modify these if needed:
    ```env
-   NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1/v1
+   NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
    NODE_ENV=development
    # Add these for GitHub OAuth (when implemented):
    # GITHUB_CLIENT_ID=your_github_client_id
@@ -360,10 +360,9 @@ The app includes comprehensive mock data for development:
 The API client automatically falls back to mock data when the backend is unavailable, making development seamless. This allows the frontend to be developed and tested independently.
 
 ### Current Limitations
-- **No Real Authentication** - Sign-in button is mock only
+### Current Limitations
 - **No File Upload Processing** - Files are validated client-side only
 - **No Path Template Resolution** - Templates are stored but not previewed
-- **No Backend Integration** - All data comes from mock sources
 
 ## 🚀 Next Development Steps
 

@@ -135,25 +135,25 @@ export default function ProjectsPage() {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <ExternalLink className="h-3 w-3" />
                     <a
-                      href={project.repo_url}
+                      href={project.repo}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:text-foreground transition-colors truncate"
                     >
-                      {project.repo_url.replace("https://github.com/", "")}
+                      {project.repo.replace("https://github.com/", "")}
                     </a>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <GitBranch className="h-3 w-3" />
                     <Badge variant="outline" className="text-xs">
-                      {project.default_branch}
+                      {project.default_branch || 'main'}
                     </Badge>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Clock className="h-3 w-3" />
-                    <span>Last sync: {formatDate(project.last_sync)}</span>
+                    <span>Last sync: {project.latestSyncAt ? formatDate(project.latestSyncAt) : 'Never'}</span>
                   </div>
 
                   <Button asChild className="w-full">

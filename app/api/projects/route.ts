@@ -15,16 +15,16 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
     try {
-        const { repo_url } = await request.json()
+        const { repo } = await request.json()
 
-        if (!repo_url) {
+        if (!repo) {
             return NextResponse.json(
                 { error: 'Repository URL is required' },
                 { status: 400 }
             )
         }
 
-        const project = await createProject(repo_url)
+        const project = await createProject(repo)
         return NextResponse.json(project, { status: 201 })
     } catch (error) {
         return NextResponse.json(

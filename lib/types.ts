@@ -89,9 +89,11 @@ export interface NamingRule {
 export interface Project {
   id: string
   name: string
-  repo_url: string
-  last_sync: string
-  default_branch: string
+  repo: string
+  latestSyncAt: string | null
+  status: string
+  // Frontend specific or optional fields
+  default_branch?: string
   description?: string
   settings?: ProjectSettings
 }

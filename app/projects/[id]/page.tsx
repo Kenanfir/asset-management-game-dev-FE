@@ -67,23 +67,23 @@ export default function ProjectPage() {
           <div className="flex items-center gap-1">
             <ExternalLink className="h-3 w-3" />
             <a
-              href={project.repo_url}
+              href={project.repo}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors"
             >
-              {project.repo_url.replace("https://github.com/", "")}
+              {project.repo.replace("https://github.com/", "")}
             </a>
           </div>
           <div className="flex items-center gap-1">
             <GitBranch className="h-3 w-3" />
             <Badge variant="outline" className="text-xs">
-              {project.default_branch}
+              {project.default_branch || 'main'}
             </Badge>
           </div>
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            <span>Last sync: {formatDate(project.last_sync)}</span>
+            <span>Last sync: {project.latestSyncAt ? formatDate(project.latestSyncAt) : 'Never'}</span>
           </div>
         </div>
       </div>
@@ -100,28 +100,8 @@ export default function ProjectPage() {
               <CardDescription>Latest asset management activities</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Asset validation completed</p>
-                    <p className="text-xs text-muted-foreground">hero_sprite.png - 2 hours ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Upload job started</p>
-                    <p className="text-xs text-muted-foreground">background_music.wav - 4 hours ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="w-2 h-2 bg-violet-400 rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Asset marked for review</p>
-                    <p className="text-xs text-muted-foreground">enemy_model.fbx - 6 hours ago</p>
-                  </div>
-                </div>
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No recent activity to display.</p>
               </div>
             </CardContent>
           </Card>

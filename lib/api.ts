@@ -12,7 +12,7 @@ import type {
 } from './types'
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
 
 class ApiError extends Error {
     constructor(
@@ -37,6 +37,7 @@ async function apiRequest<T>(
             'Content-Type': 'application/json',
             ...options.headers,
         },
+        credentials: 'include',
         ...options,
     }
 
@@ -106,7 +107,7 @@ export const projectsApi = {
         try {
             return await apiRequest<Project>('/projects', {
                 method: 'POST',
-                body: JSON.stringify({ repo_url: repoUrl }),
+                body: JSON.stringify({ repo: repoUrl }),
             })
         } catch (error) {
             // Fallback to mock data

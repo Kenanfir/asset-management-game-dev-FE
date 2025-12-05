@@ -5,16 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Github } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { authApi } from "@/lib/api"
 
 export default function SignInPage() {
   const router = useRouter()
 
-  const handleGitHubSignIn = () => {
-    // Mock sign-in - in a real app this would integrate with GitHub OAuth
-    // For now, just redirect to projects page
-    setTimeout(() => {
-      router.push("/projects")
-    }, 1000)
+  const handleGitHubSignIn = async () => {
+    try {
+      const { url } = await authApi.signInWithGitHub()
+      window.location.href = url
+    } catch (error) {
+      console.error("Failed to start GitHub sign-in:", error)
+      // Optional: Show error toast
+    }
   }
 
   return (

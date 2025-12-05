@@ -99,28 +99,32 @@ const defaultBasePaths: Partial<Record<AssetType, string>> = {
   doc: "Assets/Docs",
 }
 
+const defaultSettings: ProjectSettings = {
+  default_rule_pack_by_type: defaultRulePacks,
+  naming_conventions: defaultNamingConventions,
+  allow_lossy_autofix: false,
+  default_base_paths: defaultBasePaths,
+  auto_assign: false,
+  validation_strict: true,
+}
+
 export const mockProjects: Project[] = [
   {
-    id: "1",
+    id: "proj_1",
     name: "Pixel Adventure",
-    repo_url: "https://github.com/gamedev/pixel-adventure",
-    last_sync: "2024-01-15T10:30:00Z",
+    repo: "https://github.com/gamedev/pixel-adventure",
+    latestSyncAt: "2024-01-15T10:30:00Z",
     default_branch: "main",
-    description: "A retro-style platformer game with pixel art assets",
-    settings: {
-      default_rule_pack_by_type: defaultRulePacks,
-      naming_conventions: defaultNamingConventions,
-      allow_lossy_autofix: false,
-      default_base_paths: defaultBasePaths,
-      auto_assign: false,
-      validation_strict: true,
-    },
+    status: "active",
+    description: "A 2D platformer with pixel art assets",
+    settings: defaultSettings,
   },
   {
-    id: "2",
+    id: "proj_2",
     name: "Space Odyssey",
-    repo_url: "https://github.com/gamedev/space-odyssey",
-    last_sync: "2024-01-14T16:45:00Z",
+    repo: "https://github.com/gamedev/space-odyssey",
+    latestSyncAt: "2024-01-14T16:45:00Z",
+    status: "active",
     default_branch: "develop",
     description: "3D space exploration game with procedural generation",
     settings: {
@@ -148,20 +152,14 @@ export async function createProject(repoUrl: string): Promise<Project> {
   await new Promise((resolve) => setTimeout(resolve, 1000))
 
   const newProject: Project = {
-    id: String(mockProjects.length + 1),
-    name: repoUrl.split("/").pop() || "New Project",
-    repo_url: repoUrl,
-    last_sync: new Date().toISOString(),
+    id: `proj_${Date.now()}`,
+    name: repoUrl.split('/').pop() || 'New Project',
+    repo: repoUrl,
+    latestSyncAt: new Date().toISOString(),
     default_branch: "main",
+    status: "active",
     description: "Newly connected repository",
-    settings: {
-      default_rule_pack_by_type: defaultRulePacks,
-      naming_conventions: defaultNamingConventions,
-      allow_lossy_autofix: false,
-      default_base_paths: defaultBasePaths,
-      auto_assign: false,
-      validation_strict: true,
-    },
+    settings: defaultSettings,
   }
 
   mockProjects.push(newProject)
